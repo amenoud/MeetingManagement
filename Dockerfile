@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1
-FROM node:24-slim AS deps
+FROM node:25-slim AS deps
 WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml .npmrc ./
 # --ignore-scripts: the `prepare` script (husky) must not run in the image.
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
-FROM node:24-slim AS runtime
+FROM node:25-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=deps --chown=node:node /app/node_modules ./node_modules
