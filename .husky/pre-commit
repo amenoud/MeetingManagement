@@ -1,1 +1,14 @@
 pnpm exec lint-staged
+
+# Secret scan of staged changes (the repository is public). Skipped with a warning if Docker is down.
+GITLEAKS_IMAGE=ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+if docker info >/dev/null 2>&1; then
+  MOUNT="$(pwd -W 2>/dev/null || pwd)"
+  MSYS_NO_PATHCONV=1 docker run --rm -v "$MOUNT:/repo" -w /repo "$GITLEAKS_IMAGE" \
+    git --pre-commit --staged --config /repo/.gitleaks.toml --redact --no-banner /repo || {
+    echo "gitleaks: possible secret in staged changes, commit refused." >&2
+    exit 1
+  }
+else
+  echo "WARNING: Docker not running, secret scan skipped (CI will still scan)." >&2
+fi

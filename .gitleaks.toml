@@ -1,0 +1,8 @@
+title = "MeetingManagement gitleaks config"
+
+[extend]
+useDefault = true
+
+# Exceptions must be justified here. None yet: add an [[allowlists]] entry only for
+# values that are public by design (e.g. the fake development credentials of docker-compose.yml)
+# and only if gitleaks actually reports them.
