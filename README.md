@@ -19,6 +19,25 @@ pnpm install
 pnpm lint && pnpm typecheck && pnpm test
 ```
 
+## Environnement local (Docker)
+
+Docker doit être démarré.
+
+```bash
+pnpm docker:up      # PostgreSQL, S3 (RustFS), Mailpit
+pnpm test:docker    # smoke test complet, avec l'image de l'application
+pnpm docker:down    # arrête les services (garde les données)
+pnpm docker:reset   # arrête et supprime les volumes
+```
+
+| Service                    | Adresse locale                                                           |
+| -------------------------- | ------------------------------------------------------------------------ |
+| PostgreSQL                 | `127.0.0.1:5433` (5433 pour ne pas heurter un PostgreSQL local sur 5432) |
+| S3                         | `http://127.0.0.1:9000` (console `:9001`)                                |
+| Mailpit (SMTP / interface) | `127.0.0.1:1025` / `http://127.0.0.1:8025`                               |
+
+Les identifiants sont **factices** (dépôt public). Voir `.env.example` pour les surcharger.
+
 ## Scripts
 
 | Script                         | Rôle                                  |

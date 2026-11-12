@@ -1,0 +1,70 @@
+# Local development environment. All credentials below are FAKE and for local use only
+# (this repository is public). Ports are bound to 127.0.0.1 only.
+# Override any value via a git-ignored .env file (see .env.example).
+name: meetingmanagement
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_dev_only}
+      POSTGRES_DB: ${POSTGRES_DB:-meetingmanagement}
+    ports:
+      - '127.0.0.1:${DB_PORT:-5433}:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  s3:
+    # MinIO no longer publishes community images on Docker Hub; RustFS is S3-compatible (local region is us-east-1).
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY_ID:-devaccesskey}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:-devsecretkey_only}
+    ports:
+      - '127.0.0.1:${S3_PORT:-9000}:9000'
+      - '127.0.0.1:${S3_CONSOLE_PORT:-9001}:9001'
+    volumes:
+      - s3-data:/data
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - '127.0.0.1:${SMTP_PORT:-1025}:1025'
+      - '127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025'
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    profiles: ['app']
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_dev_only}@db:5432/${POSTGRES_DB:-meetingmanagement}
+      S3_ENDPOINT: http://s3:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: ${S3_BUCKET:-meetingmanagement-dev}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-devaccesskey}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-devsecretkey_only}
+      SMTP_HOST: mailpit
+      SMTP_PORT: '1025'
+      SMTP_FROM: noreply@meetingmanagement.test
+    ports:
+      - '127.0.0.1:${APP_PORT:-3000}:3000'
+
+volumes:
+  db-data:
+  s3-data:
