@@ -24,6 +24,7 @@ export default {
         'docs',
         'deps',
         'authz',
+        'security',
         'i18n',
       ],
     ],
