@@ -19,6 +19,7 @@
     "docker:up": "docker compose up -d --wait",
     "docker:down": "docker compose down",
     "docker:reset": "docker compose down -v",
+    "check:actions": "node scripts/check-actions-pinned.ts",
     "test:docker": "node scripts/docker-smoke.mjs",
     "prepare": "husky"
   },
