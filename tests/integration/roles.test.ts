@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import { runMigrations } from '../../src/platform/db/index.ts';
-import { createTestDatabase, errorCode, query, type TestDatabase } from './helpers.ts';
+import { createTestDatabase, errorCode, query, type TestDatabase } from '../helpers/db.ts';
 
 const MIGRATIONS = fileURLToPath(new URL('../../db/migrations', import.meta.url));
 const INSUFFICIENT_PRIVILEGE = '42501';

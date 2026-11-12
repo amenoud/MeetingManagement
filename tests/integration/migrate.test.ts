@@ -3,7 +3,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runMigrations } from '../../src/platform/db/index.ts';
-import { createTestDatabase, query, type TestDatabase } from './helpers.ts';
+import { createTestDatabase, query, type TestDatabase } from '../helpers/db.ts';
 
 let db: TestDatabase;
 const dirs: string[] = [];

@@ -1,0 +1,6 @@
+# Review ownership. Isolation-critical paths are listed explicitly.
+*                                @amenoud
+/db/                             @amenoud
+/db/isolation-exceptions.json    @amenoud
+/src/platform/db/                @amenoud
+/.github/                        @amenoud

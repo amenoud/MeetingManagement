@@ -44,7 +44,13 @@ export default tseslint.config(
   },
   {
     // The database layer, its scripts and the integration tests may talk to pg directly.
-    files: ['src/platform/db/**/*.ts', 'scripts/**/*.ts', 'tests/integration/**/*.ts'],
+    files: [
+      'src/platform/db/**/*.ts',
+      'scripts/**/*.ts',
+      'tests/integration/**/*.ts',
+      'tests/isolation/**/*.ts',
+      'tests/helpers/**/*.ts',
+    ],
     rules: { 'no-restricted-imports': 'off' },
   },
   {
