@@ -38,6 +38,17 @@ pnpm docker:reset   # arrête et supprime les volumes
 
 Les identifiants sont **factices** (dépôt public). Voir `.env.example` pour les surcharger.
 
+### Base de données
+
+```bash
+cp .env.example .env     # une seule fois (valeurs factices)
+pnpm docker:up
+pnpm db:setup            # crée les rôles app_migrator / app_rw puis applique db/migrations
+pnpm test:integration    # tests sur un vrai PostgreSQL (bases jetables)
+```
+
+L'application se connecte avec `app_rw` (ni propriétaire, ni superuser, ni `BYPASSRLS`). `DATABASE_ADMIN_URL` ne sert qu'au bootstrap et n'est jamais donnée à l'application. Voir `docs/adr/0002-multitenance-rls.md`.
+
 ## Scripts
 
 | Script                         | Rôle                                  |

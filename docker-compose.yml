@@ -53,7 +53,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: '3000'
-      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_dev_only}@db:5432/${POSTGRES_DB:-meetingmanagement}
+      DATABASE_URL: postgres://app_rw:${APP_RW_PASSWORD:-app_rw_dev_only}@db:5432/${POSTGRES_DB:-meetingmanagement}
       S3_ENDPOINT: http://s3:9000
       S3_REGION: us-east-1
       S3_BUCKET: ${S3_BUCKET:-meetingmanagement-dev}
