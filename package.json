@@ -19,6 +19,10 @@
     "docker:up": "docker compose up -d --wait",
     "docker:down": "docker compose down",
     "docker:reset": "docker compose down -v",
+    "db:bootstrap": "node --env-file-if-exists=.env scripts/db-bootstrap.ts",
+    "db:migrate": "node --env-file-if-exists=.env scripts/db-migrate.ts",
+    "db:setup": "pnpm db:bootstrap && pnpm db:migrate",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "check:actions": "node scripts/check-actions-pinned.ts",
     "test:docker": "node scripts/docker-smoke.mjs",
     "prepare": "husky"
@@ -37,6 +41,7 @@
     "@commitlint/config-conventional": "^21.2.4",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.19.2",
+    "@types/pg": "^8.23.1",
     "@vitest/coverage-v8": "^5.1.0",
     "dependency-cruiser": "^18.7.2",
     "eslint": "^10.14.0",
@@ -50,6 +55,7 @@
     "vitest": "^5.1.0"
   },
   "dependencies": {
+    "pg": "^8.23.1",
     "zod": "^4.6.7"
   }
 }

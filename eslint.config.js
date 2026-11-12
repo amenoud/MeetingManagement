@@ -26,6 +26,12 @@ export default tseslint.config(
       'no-restricted-imports': [
         'error',
         {
+          paths: [
+            {
+              name: 'pg',
+              message: 'Only src/platform/db may import pg: use withTenant() (ADR-0002).',
+            },
+          ],
           patterns: [
             {
               regex: '^(@/|\\.\\./)+modules/[^/]+/.+',
@@ -35,6 +41,11 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    // The database layer, its scripts and the integration tests may talk to pg directly.
+    files: ['src/platform/db/**/*.ts', 'scripts/**/*.ts', 'tests/integration/**/*.ts'],
+    rules: { 'no-restricted-imports': 'off' },
   },
   {
     files: ['*.{js,cjs,mjs}', 'scripts/**/*.mjs'],

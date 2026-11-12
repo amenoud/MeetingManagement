@@ -26,6 +26,14 @@ module.exports = {
       to: { path: '^src/app/' },
     },
     {
+      name: 'pg-only-in-platform-db',
+      comment:
+        'Only the database layer may use the pg driver (ADR-0002: all SQL goes through withTenant).',
+      severity: 'error',
+      from: { pathNot: '^src/platform/db/' },
+      to: { path: '(^|/)node_modules/pg/' },
+    },
+    {
       name: 'no-circular',
       severity: 'error',
       from: {},
