@@ -17,6 +17,8 @@ TypeScript `strict`, Next.js (App Router, `output: standalone`), Drizzle, Postgr
 - Toute table métier : `tenant_id uuid not null`, `ENABLE` **et** `FORCE ROW LEVEL SECURITY`, politique sur `current_setting('app.tenant_id', true)`, FK composites `(tenant_id, id)`.
 - Tout accès SQL passe par `withTenant(tenantId, fn)` (transaction + `set_config(..., true)`). Jamais de connexion « nue ».
 - Le rôle applicatif n'est ni propriétaire ni `BYPASSRLS`. N'utilise jamais le rôle de migration à l'exécution.
+- **Convention de table** (voir `docs/specs/PLAN-DB-02.md`) : `tenant_id uuid not null default app.current_tenant_id()`, clé `(tenant_id, id)`, **FK composites** `(tenant_id, parent_id)` (les contrôles de FK ignorent la RLS), unicités toujours `(tenant_id, …)`, index commençant par `tenant_id`, puis `select app.enable_tenant_isolation('app.ma_table')` dans la **même migration**. Ne réécris jamais la politique à la main.
+- Les erreurs Drizzle répètent le SQL et ses paramètres dans leur message : ne les renvoie jamais à l'utilisateur et ne les journalise pas telles quelles.
 - Jobs : `tenantId` obligatoire dans le payload. Fichiers : clés `tenants/{tenant_id}/…`. Logs : toujours `tenant_id`. Pas de cache partagé.
 - Toute nouvelle table/route/job/recherche s'accompagne d'un **test d'isolation** dans `tests/isolation/`. La CI le rend bloquant.
 
