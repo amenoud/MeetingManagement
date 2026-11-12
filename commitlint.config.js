@@ -1,0 +1,32 @@
+export default {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    'scope-enum': [
+      1,
+      'always',
+      [
+        'identity',
+        'tenancy',
+        'bodies',
+        'meetings',
+        'agenda',
+        'minutes',
+        'decisions',
+        'risks',
+        'actions',
+        'documents',
+        'governance',
+        'audit',
+        'notifications',
+        'platform',
+        'db',
+        'ci',
+        'docs',
+        'deps',
+        'authz',
+        'i18n',
+      ],
+    ],
+    'header-max-length': [2, 'always', 100],
+  },
+};

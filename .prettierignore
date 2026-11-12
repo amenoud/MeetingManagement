@@ -1,0 +1,7 @@
+node_modules
+coverage
+dist
+pnpm-lock.yaml
+docs
+CLAUDE.md
+tests/fixtures
