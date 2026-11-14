@@ -76,25 +76,28 @@ describe('logger', () => {
   it('SPEC-000-AC18 leaves no password, token, secret, e-mail or document content in the output', () => {
     const sink = collector();
     const log = createLogger({ destination: sink.destination });
+    // Fake sensitive values, keyed exactly like real ones (scrub() works on key names too).
+    const request = {
+      method: 'POST',
+      url: `/reset?token=${LEAKS.queryToken}&lang=fr`,
+      headers: {
+        authorization: `Bearer ${LEAKS.bearer}`,
+        cookie: `sid=${LEAKS.session}`,
+        'content-type': 'application/json',
+      },
+      body: { password: LEAKS.password, minutes: { content: LEAKS.pvText } },
+      user: `${LEAKS.email}`,
+      database: `postgres://app_rw:${LEAKS.dbPassword}@db:5432/app`,
+      jwt: `eyJhbGciOiJIUzI1NiJ9.${LEAKS.jwtPayload}.abcDEFghiJKL`,
+      config: { apiKey: new Secret(LEAKS.secretObject) },
+    };
+    const message = `login by ${LEAKS.email} failed, password=${LEAKS.password}`;
     runWithContext({ requestId: 'req-12345678' }, () => {
       bindTenant(A);
-      log.info(
-        {
-          method: 'POST',
-          url: `/reset?token=${LEAKS.queryToken}&lang=fr`,
-          headers: {
-            authorization: `Bearer ${LEAKS.bearer}`,
-            cookie: `sid=${LEAKS.session}`,
-            'content-type': 'application/json',
-          },
-          body: { password: LEAKS.password, minutes: { content: LEAKS.pvText } },
-          user: `${LEAKS.email}`,
-          database: `postgres://app_rw:${LEAKS.dbPassword}@db:5432/app`,
-          jwt: `eyJhbGciOiJIUzI1NiJ9.${LEAKS.jwtPayload}.abcDEFghiJKL`,
-          config: { apiKey: new Secret(LEAKS.secretObject) },
-        },
-        `login by ${LEAKS.email} failed, password=${LEAKS.password}`,
-      );
+      // Deliberate: FAKE sensitive values go to the logger to prove that scrub() masks them
+      // (the assertions below search the raw output for every one of them).
+      // codeql[js/clear-text-logging]
+      log.info(request, message);
     });
     const output = sink.raw();
     for (const [name, value] of Object.entries(LEAKS)) {
