@@ -11,6 +11,7 @@ import {
   type Rule,
 } from '../../src/platform/db/index.ts';
 import { createTestDatabase, query, type TestDatabase } from '../helpers/db.ts';
+import { REASON, compliantExceptions } from '../helpers/exceptions.ts';
 
 const MIGRATIONS = fileURLToPath(new URL('../../db/migrations', import.meta.url));
 const EXCEPTIONS_FILE = fileURLToPath(
@@ -18,13 +19,6 @@ const EXCEPTIONS_FILE = fileURLToPath(
 );
 const COMPLIANT = fileURLToPath(new URL('./fixtures/compliant.sql', import.meta.url));
 const BEHAVIOR_FIXTURE = fileURLToPath(new URL('./fixtures/isolation.sql', import.meta.url));
-
-const REASON = 'Declared by the audit test to exercise the rule.';
-const compliantExceptions: IsolationExceptions = {
-  ...NO_EXCEPTIONS,
-  rootTables: [{ table: 'app.aud_root', column: 'id', reason: REASON, approvedIn: 'TST-01' }],
-  globalTables: [{ table: 'app.aud_global', reason: REASON, approvedIn: 'TST-01' }],
-};
 
 const withGlobal = (...tables: string[]): IsolationExceptions => ({
   ...compliantExceptions,

@@ -27,8 +27,8 @@ export interface TestDatabase {
   drop: () => Promise<void>;
 }
 
-/** Creates a throwaway database with the roles bootstrapped, so each test file starts clean. */
-export async function createTestDatabase(): Promise<TestDatabase> {
+/** Creates an EMPTY throwaway database (no roles bootstrapped, no schema). */
+export async function createBareDatabase(): Promise<TestDatabase> {
   const name = `mm_test_${randomBytes(6).toString('hex')}`;
   const server = new Client({ connectionString: ADMIN_URL });
   await server.connect();
@@ -47,6 +47,12 @@ export async function createTestDatabase(): Promise<TestDatabase> {
       await cleanup.end();
     },
   };
+  return database;
+}
+
+/** Creates a throwaway database with the roles bootstrapped, so each test file starts clean. */
+export async function createTestDatabase(): Promise<TestDatabase> {
+  const database = await createBareDatabase();
   await bootstrapRoles(database.adminUrl, database.rwUrl, database.migratorUrl);
   return database;
 }
