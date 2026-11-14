@@ -37,6 +37,8 @@ TypeScript `strict`, Next.js (App Router, `output: standalone`), Drizzle, Postgr
 - Valide toute entrée avec Zod aux frontières. Requêtes paramétrées uniquement. Pas de `dangerouslySetInnerHTML`.
 - Mots de passe Argon2id, sessions opaques hachées, TOTP, ré-authentification pour approuver un PV (ADR-0003). Pas de cryptographie maison.
 - Aucun secret, jeton ni donnée réelle dans le code, les tests, les logs ou les captures. Utilise `.env.example` et des données synthétiques.
+- **Logs** : `getLogger()` uniquement (jamais `console` dans `src/`, ESLint l'interdit). Journalise des **identifiants** (`meetingId`, `tenant_id`…), **jamais du contenu** (notes, PV, texte libre) ni de donnée personnelle ; le masquage (`scrub`) est un filet, pas le plan. Nom d'événement en `domaine.action`. `request_id`/`tenant_id` sont ajoutés automatiquement (ne les passe pas à la main). Un hachage se journalise sous une clé `…hash`.
+- **Configuration** : lis-la via `getConfig()` (`process.env` est interdit hors `config.ts`). Les secrets sont des `Secret` : appelle `.reveal()` seulement au point d'usage, jamais pour les journaliser. Toute variable ajoutée au schéma va aussi dans `.env.example` (un test le vérifie).
 - Pas de nouveau sous-traitant ni de service externe sans ADR. **Aucun service soumis au droit américain** pour des données de production.
 - Téléversements : liste blanche MIME par signature, taille max, `Content-Disposition: attachment`.
 - Pas de `fetch` vers une URL fournie par l'utilisateur.

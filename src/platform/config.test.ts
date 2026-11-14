@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { inspect } from 'node:util';
 import { describe, expect, it } from 'vitest';
-import { loadConfig } from './config';
+import { configKeys, loadConfig } from './config.ts';
+import { Secret } from './secret.ts';
 
 const valid = {
   DATABASE_URL: 'postgres://user:pw@localhost:5432/db',
@@ -18,6 +21,7 @@ describe('loadConfig', () => {
     expect(config.PORT).toBe(3000);
     expect(config.SMTP_PORT).toBe(1025);
     expect(config.S3_REGION).toBe('eu-central-1');
+    expect(config.LOG_LEVEL).toBe('info');
   });
 
   it('SPEC-000-AC17 names the missing variable', () => {
@@ -35,5 +39,46 @@ describe('loadConfig', () => {
     }
     expect(message).toContain('SMTP_PORT');
     expect(message).not.toContain('secret-value');
+  });
+
+  it('rejects an unknown log level', () => {
+    expect(() => loadConfig({ ...valid, LOG_LEVEL: 'verbose' })).toThrow('LOG_LEVEL');
+  });
+
+  it('SPEC-000-AC18 keeps secrets in Secret wrappers that never print their value', () => {
+    const config = loadConfig(valid);
+    expect(config.DATABASE_URL).toBeInstanceOf(Secret);
+    expect(config.S3_SECRET_ACCESS_KEY.reveal()).toBe('secret-value');
+    const printed = [
+      JSON.stringify(config),
+      inspect(config, { depth: 5 }),
+      String(config.DATABASE_URL),
+    ];
+    for (const text of printed) {
+      expect(text).not.toContain('secret-value');
+      expect(text).not.toContain('pw@localhost');
+    }
+  });
+
+  it('returns a frozen configuration', () => {
+    const config = loadConfig(valid);
+    expect(Object.isFrozen(config)).toBe(true);
+    expect(() => {
+      (config as { PORT: number }).PORT = 1;
+    }).toThrow();
+  });
+});
+
+describe('.env.example', () => {
+  it('lists every variable of the configuration schema (no drift)', () => {
+    const example = readFileSync(new URL('../../.env.example', import.meta.url), 'utf8');
+    const declared = new Set(
+      example
+        .split('\n')
+        .map((line) => /^([A-Z0-9_]+)=/.exec(line)?.[1])
+        .filter((name): name is string => name !== undefined),
+    );
+    const missing = configKeys.filter((key) => !declared.has(key));
+    expect(missing).toEqual([]);
   });
 });

@@ -1,11 +1,13 @@
-import { loadConfig } from './config.ts';
+import { getConfig } from './config.ts';
 import { createHealthServer } from './health-server.ts';
+import { initLogger } from './logger.ts';
 
-const config = loadConfig(process.env);
+const config = getConfig();
+const log = initLogger({ level: config.LOG_LEVEL });
 const server = createHealthServer();
 
 server.listen(config.PORT, '0.0.0.0', () => {
-  console.info(JSON.stringify({ msg: 'listening', port: config.PORT }));
+  log.info({ port: config.PORT }, 'server.listening');
 });
 
 for (const signal of ['SIGTERM', 'SIGINT'] as const) {

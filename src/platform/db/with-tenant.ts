@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { getLogger } from '../logger.ts';
 
 /** SQL handle valid ONLY inside the withTenant() callback that received it. */
 export type TenantTransaction = NodePgDatabase;
@@ -109,7 +110,7 @@ export function createDatabase(options: DatabaseOptions): Database {
   });
   // An idle client can error (server restart): log without any connection detail.
   pool.on('error', () => {
-    console.error(JSON.stringify({ msg: 'database pool error' }));
+    getLogger().error('database.pool_error');
   });
   return createDatabaseFromPool(pool, { ownsPool: true });
 }
