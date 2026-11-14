@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { bindTenant } from './context.ts';
 import { AppError } from './errors.ts';
 import { createHttpServer, type RequestHandler } from './http.ts';
+import { createTranslator } from './i18n/translator.ts';
 import { createLogger } from './logger.ts';
 
 const TENANT = '0197b3a2-7c1e-7f00-8000-00000000000a';
@@ -185,18 +186,29 @@ describe('SPEC-000-AC18 HTTP: errors', () => {
     expect(raw).toContain('t_name_key');
   });
 
-  it('answers an AppError with its own status, code and public message, logged as a warning', async () => {
+  it('answers an AppError with its status and code, in the language of the catalogs, logged as a warning', async () => {
     const { base, sink } = await start(() => {
-      throw new AppError('forbidden', 403, 'You may not do this.');
+      throw new AppError('forbidden', 403, 'English fallback, never shown for a known code.');
     });
     const response = await fetch(`${base}/x`);
     expect(response.status).toBe(403);
     expect(await response.json()).toMatchObject({
-      error: { code: 'forbidden', message: 'You may not do this.' },
+      error: { code: 'forbidden', message: createTranslator('fr').t('errors.forbidden') },
     });
     await accessLine(sink);
     expect(sink.entries().find((entry) => entry['msg'] === 'http.error')).toMatchObject({
       level: 'warn',
+    });
+  });
+
+  it('shows the default message of an AppError whose code has no catalog entry', async () => {
+    const { base } = await start(() => {
+      throw new AppError('custom_unlisted_code', 409, 'Default message.');
+    });
+    const response = await fetch(`${base}/x`);
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({
+      error: { code: 'custom_unlisted_code', message: 'Default message.' },
     });
   });
 

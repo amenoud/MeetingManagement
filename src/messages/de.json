@@ -1,0 +1,24 @@
+{
+  "app": {
+    "name": "MeetingManagement"
+  },
+  "home": {
+    "title": "Sitzungsverwaltung für Gremien",
+    "tagline": "Einladen, beraten, beschliessen und dokumentieren – sicher und nachvollziehbar.",
+    "status": "Die Anwendung befindet sich in Entwicklung.",
+    "languageNav": "Sprache"
+  },
+  "errors": {
+    "not_found": "Die angeforderte Seite wurde nicht gefunden.",
+    "forbidden": "Sie sind für diese Aktion nicht berechtigt.",
+    "unauthenticated": "Bitte melden Sie sich an, um fortzufahren.",
+    "validation_failed": "Die Eingaben sind ungültig. Bitte prüfen Sie Ihre Angaben.",
+    "rate_limited": "Zu viele Anfragen. Bitte versuchen Sie es später erneut.",
+    "internal_error": "Ein unerwarteter Fehler ist aufgetreten. Nennen Sie dem Support die Anfragenummer."
+  },
+  "language": {
+    "fr": "Français",
+    "de": "Deutsch",
+    "en": "English"
+  }
+}

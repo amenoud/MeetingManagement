@@ -51,7 +51,7 @@ TypeScript `strict`, Next.js (App Router, `output: standalone`), Drizzle, Postgr
 - Migrations : SQL versionné dans `db/migrations`, rétrocompatibles (expand/contract), jamais destructives sans accord explicite.
 
 ## i18n
-Aucune chaîne en dur dans l'UI, e-mails ou PDF : clés dans `src/messages/{fr,de,en}.json`, les 3 langues dans la même PR. Dates/nombres via `Intl`, fuseau `Europe/Zurich` par défaut.
+Aucune chaîne visible par l'utilisateur en dur (UI, e-mails, PDF, erreurs) : clés dans `src/messages/{fr,de,en}.json`, les **3 langues dans la même PR** ; `fr` est la référence. Utilise `createTranslator(locale).t('cle')` (clé typée) et `createFormatters(locale)` pour dates et nombres (fuseau `Europe/Zurich` par défaut), jamais de formatage à la main. Messages en ICU, **apostrophe typographique `’`**, pas de HTML, pas de concaténation de morceaux de phrase. Un `AppError('code', …)` impose `errors.code` dans les 3 langues. `pnpm i18n:check` doit passer. Les textes DE/EN rédigés par l'agent sont à faire relire par un humain (voir `docs/i18n.md`).
 
 ## Vocabulaire
 Utilise exactement les termes du glossaire (organe = `body`, séance = `meeting`, point d'ODJ = `agenda_item`, décision = `decision`, PV = `minutes`, mandat = `mandate`). Ne crée pas de synonymes.

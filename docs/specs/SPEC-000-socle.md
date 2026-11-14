@@ -45,7 +45,7 @@ Disposer d'un squelette déployable en continu où l'**isolation entre organisat
 - **SPEC-000-AC18** *(PLT-01a : masquage, `request_id`, `tenant_id` ; PLT-01b : niveau HTTP et erreurs, livrés)* *Given* une requête, *then* les logs contiennent `request_id` et `tenant_id` mais ni mot de passe, ni jeton, ni contenu de PV (test de redaction).
 - **SPEC-000-AC19** *Given* une réponse HTTP, *then* elle porte CSP avec nonce, HSTS, `nosniff`, `frame-ancestors 'none'`, `Referrer-Policy`.
 - **SPEC-000-AC20** *Given* plus de N requêtes dans la fenêtre sur une route protégée, *then* la réponse est 429 avec `Retry-After`.
-- **SPEC-000-AC21** *Given* l'application en `fr`, `de` ou `en`, *then* la page d'accueil s'affiche dans la langue choisie ; *given* une clé présente dans une langue et absente d'une autre, *then* la CI échoue.
+- **SPEC-000-AC21** *(PLT-02 : cœur i18n, parité bloquante, page d'accueil **temporaire** ; la vraie page et `next-intl` viennent avec PLT-03)* *Given* l'application en `fr`, `de` ou `en`, *then* la page d'accueil s'affiche dans la langue choisie ; *given* une clé présente dans une langue et absente d'une autre, *then* la CI échoue.
 - **SPEC-000-AC22** *Given* une action qui insère un job d'e-mail dans la même transaction, *when* la transaction échoue, *then* aucun job n'existe ; *when* elle réussit, *then* le job s'exécute exactement une fois même après un redémarrage du worker.
 - **SPEC-000-AC23** *Given* un job sans `tenantId`, *then* il est rejeté.
 

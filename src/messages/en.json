@@ -1,0 +1,24 @@
+{
+  "app": {
+    "name": "MeetingManagement"
+  },
+  "home": {
+    "title": "Committee meeting management",
+    "tagline": "Convene, deliberate, decide and document, securely.",
+    "status": "The application is under development.",
+    "languageNav": "Language"
+  },
+  "errors": {
+    "not_found": "The requested page could not be found.",
+    "forbidden": "You are not allowed to perform this action.",
+    "unauthenticated": "Please sign in to continue.",
+    "validation_failed": "The data entered is invalid. Please check your input.",
+    "rate_limited": "Too many requests. Please try again later.",
+    "internal_error": "An unexpected error occurred. Quote the request id when contacting support."
+  },
+  "language": {
+    "fr": "Français",
+    "de": "Deutsch",
+    "en": "English"
+  }
+}

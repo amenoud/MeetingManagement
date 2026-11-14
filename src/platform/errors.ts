@@ -2,6 +2,8 @@
 // Rule: only AppError messages ever reach a user. Any other error becomes a generic response and is
 // logged (scrubbed) with the request id, so support can find it without the user seeing internals.
 
+import type { Translator } from './i18n/translator.ts';
+
 /**
  * An error the caller can safely show: `message` is PUBLIC text (no data, no SQL, no identifiers of
  * other tenants). `code` is stable and is what the UI localizes (FR/DE/EN, PLT-02).
@@ -10,8 +12,9 @@ export class AppError extends Error {
   readonly code: string;
   readonly status: number;
 
-  constructor(code: string, status: number, publicMessage: string, options?: ErrorOptions) {
-    super(publicMessage, options);
+  /** `defaultMessage` (English) is only a fallback: the user sees the message `errors.<code>` of the catalogs. */
+  constructor(code: string, status: number, defaultMessage: string, options?: ErrorOptions) {
+    super(defaultMessage, options);
     this.name = 'AppError';
     this.code = code;
     this.status = status;
@@ -29,15 +32,26 @@ const GENERIC_MESSAGE =
 export function toHttpError(
   error: unknown,
   requestId: string,
+  translator?: Translator<string>,
 ): { status: number; body: HttpErrorBody } {
+  const localized = (code: string, fallback: string): string =>
+    translator?.has(`errors.${code}`) ? translator.t(`errors.${code}`) : fallback;
   if (error instanceof AppError) {
     return {
       status: error.status,
-      body: { error: { code: error.code, message: error.message, requestId } },
+      body: {
+        error: { code: error.code, message: localized(error.code, error.message), requestId },
+      },
     };
   }
   return {
     status: 500,
-    body: { error: { code: 'internal_error', message: GENERIC_MESSAGE, requestId } },
+    body: {
+      error: {
+        code: 'internal_error',
+        message: localized('internal_error', GENERIC_MESSAGE),
+        requestId,
+      },
+    },
   };
 }

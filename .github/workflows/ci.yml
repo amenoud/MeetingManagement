@@ -37,6 +37,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm depcruise
       - run: pnpm check:actions
+      - run: pnpm i18n:check
       - name: actionlint
         run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
 

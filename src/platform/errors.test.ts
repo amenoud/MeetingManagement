@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { databaseErrorFields } from './error-shape.ts';
 import { AppError, toHttpError } from './errors.ts';
+import { CATALOGS, createTranslator, flattenCatalog } from './i18n/index.ts';
 import { scrub } from './redact.ts';
 
 const leaks = [
@@ -130,4 +131,46 @@ describe('toHttpError', () => {
         expect(text, leak).not.toContain(leak);
     }
   });
+});
+
+describe('toHttpError with a translator (SPEC-000-AC21)', () => {
+  const text = (locale: 'fr' | 'de' | 'en', key: string): string =>
+    flattenCatalog(CATALOGS[locale]).get(key) as string;
+
+  it.each(['fr', 'de', 'en'] as const)('localizes an AppError of a known code in %s', (locale) => {
+    const { status, body } = toHttpError(
+      new AppError('forbidden', 403, 'English fallback'),
+      'req-12345678',
+      createTranslator(locale),
+    );
+    expect(status).toBe(403);
+    expect(body.error).toEqual({
+      code: 'forbidden',
+      message: text(locale, 'errors.forbidden'),
+      requestId: 'req-12345678',
+    });
+  });
+
+  it('keeps the default message for a code that has no catalog entry', () => {
+    const { body } = toHttpError(
+      new AppError('custom_unlisted', 409, 'Default.'),
+      'r',
+      createTranslator('de'),
+    );
+    expect(body.error.message).toBe('Default.');
+  });
+
+  it.each(['fr', 'de', 'en'] as const)(
+    'localizes the generic internal_error in %s, never the original message',
+    (locale) => {
+      const { status, body } = toHttpError(
+        new Error('internal path /srv/app/secret-file'),
+        'req-12345678',
+        createTranslator(locale),
+      );
+      expect(status).toBe(500);
+      expect(body.error.message).toBe(text(locale, 'errors.internal_error'));
+      expect(JSON.stringify(body)).not.toContain('secret-file');
+    },
+  );
 });

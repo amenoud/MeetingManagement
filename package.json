@@ -29,6 +29,7 @@
     "db:verify-restore": "node --env-file-if-exists=.env scripts/db-verify-restore.ts",
     "db:drill": "node scripts/db-drill.ts",
     "db:audit": "node --env-file-if-exists=.env scripts/db-audit.ts",
+    "i18n:check": "node scripts/i18n-check.ts",
     "check:actions": "node scripts/check-actions-pinned.ts",
     "test:docker": "node scripts/docker-smoke.mjs",
     "prepare": "husky"
@@ -61,7 +62,9 @@
     "vitest": "^5.1.0"
   },
   "dependencies": {
+    "@formatjs/icu-messageformat-parser": "3.5.23",
     "drizzle-orm": "^0.45.4",
+    "intl-messageformat": "^12.1.5",
     "pg": "^8.23.1",
     "pino": "^10.4.0",
     "zod": "^4.6.7"

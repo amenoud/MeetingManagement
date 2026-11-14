@@ -3,6 +3,8 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { currentContext, runWithContext } from './context.ts';
 import { AppError, toHttpError } from './errors.ts';
+import { createTranslator } from './i18n/translator.ts';
+import { localeOfRequest } from './i18n/request.ts';
 import { getLogger, type Logger } from './logger.ts';
 
 export type RequestHandler = (req: IncomingMessage, res: ServerResponse) => Promise<void> | void;
@@ -51,9 +53,12 @@ export function createHttpServer(handler: RequestHandler, options: HttpServerOpt
             res.destroy();
             return;
           }
-          const { status, body } = toHttpError(error, context.requestId);
+          const locale = localeOfRequest(req);
+          const { status, body } = toHttpError(error, context.requestId, createTranslator(locale));
           res.writeHead(status, {
             'Content-Type': 'application/json',
+            'Content-Language': locale,
+            Vary: 'Accept-Language',
             'Cache-Control': 'no-store',
           });
           res.end(JSON.stringify(body));
