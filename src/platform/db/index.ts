@@ -15,3 +15,19 @@ export {
   type IsolationExceptions,
   type Rule,
 } from './isolation-audit.ts';
+export {
+  dumpDatabase,
+  restoreDatabase,
+  defaultRunner,
+  localRunner,
+  imageRunner,
+  composeRunner,
+  containerRunner,
+  type ToolRunner,
+} from './backup.ts';
+export {
+  snapshotDatabase,
+  diffSnapshots,
+  type Snapshot,
+  type Difference,
+} from './verify-restore.ts';

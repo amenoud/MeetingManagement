@@ -49,6 +49,17 @@ pnpm test:integration    # tests sur un vrai PostgreSQL (bases jetables)
 
 L'application se connecte avec `app_rw` (ni propriétaire, ni superuser, ni `BYPASSRLS`). `DATABASE_ADMIN_URL` ne sert qu'au bootstrap et n'est jamais donnée à l'application. Voir `docs/adr/0002-multitenance-rls.md`.
 
+### Sauvegarde et restauration
+
+```bash
+pnpm db:backup                              # export dans backups/ (données personnelles : ne pas partager)
+pnpm db:restore backups/x.dump ma_base      # dans une NOUVELLE base
+pnpm db:verify-restore base_source ma_base  # comparaison + audit d'isolation
+pnpm db:drill                               # exercice de sinistre complet (Docker)
+```
+
+Procédure complète : `docs/runbooks/restore.md`.
+
 ## Scripts
 
 | Script                         | Rôle                                  |

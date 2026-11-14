@@ -53,7 +53,7 @@ Disposer d'un squelette déployable en continu où l'**isolation entre organisat
 - **SPEC-000-AC24** *Given* un merge sur `main`, *then* staging est mis à jour automatiquement, les migrations sont appliquées avant le démarrage et des smoke tests passent.
 - **SPEC-000-AC25** *Given* des smoke tests en échec, *then* le déploiement est annulé et la version précédente reste active.
 - **SPEC-000-AC26** *Given* un tag `v*`, *then* le déploiement production attend l'approbation manuelle de l'environnement `production` et réutilise l'image validée en staging.
-- **SPEC-000-AC27** *(adapté local)* *Given* une base PostgreSQL Docker alimentée par le seed, *when* j'exécute `pnpm db:backup` puis `pnpm db:restore` dans une base jetable (procédure `docs/runbooks/restore.md`), *then* les données sont restaurées, un script de vérification (comptages + `verify:chain`) les valide, et la durée est consignée. La restauration sur le PaaS est rejouée en incrément 0b.
+- **SPEC-000-AC27** *(adapté local)* *Given* une base PostgreSQL Docker alimentée par le seed, *when* j'exécute `pnpm db:backup` puis `pnpm db:restore` dans une base jetable (procédure `docs/runbooks/restore.md`), *then* les données sont restaurées, un script de vérification (nombre de lignes et empreinte du contenu de chaque table, audit d'isolation ; `verify:chain` viendra avec AUD-01) les valide, et la durée est consignée. Prouvé le 2026-11-14 (voir `docs/runbooks/restore.md` §6). La restauration sur le PaaS est rejouée en incrément 0b.
 - **SPEC-000-AC28** *Given* un secret, *then* il n'existe que dans les secrets d'environnement GitHub et du PaaS, jamais dans le dépôt.
 
 ### Documentation (DOC-01)

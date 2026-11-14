@@ -135,6 +135,7 @@ jobs:
       DATABASE_ADMIN_URL: postgres://postgres:ci_only_password@127.0.0.1:5432/meetingmanagement
       DATABASE_URL: postgres://app_rw:ci_app_rw_password@127.0.0.1:5432/meetingmanagement
       DATABASE_MIGRATOR_URL: postgres://app_migrator:ci_migrator_password@127.0.0.1:5432/meetingmanagement
+      PG_TOOLS_IMAGE: postgres:16-alpine
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -145,6 +146,13 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
+      # The restore tests need pg_dump / pg_restore of the SAME major version as the server (16).
+      # The runner (Ubuntu 26.04) only offers a newer client, whose dumps a 16 server cannot restore:
+      # run the tools from the postgres:16 image instead (see imageRunner).
+      - name: PostgreSQL 16 client tools
+        run: |
+          docker pull postgres:16-alpine
+          docker run --rm postgres:16-alpine pg_dump --version
       - name: Bootstrap roles and apply migrations
         run: pnpm db:setup
       - run: pnpm test:integration

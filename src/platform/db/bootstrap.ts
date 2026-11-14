@@ -45,11 +45,13 @@ async function upsertRole(client: Client, { user, password }: Credentials): Prom
 /**
  * Creates (or updates) the runtime and migration roles and applies the privilege model.
  * Idempotent. Must be run with an administrator connection; passwords come from the two role URLs.
+ * With `{ privileges: false }` only the roles are created or updated (used before a restore).
  */
 export async function bootstrapRoles(
   adminUrl: string,
   appRwUrl: string,
   migratorUrl: string,
+  options: { privileges?: boolean } = {},
 ): Promise<void> {
   const appRw = credentialsFrom(appRwUrl, APP_RW_ROLE);
   const migrator = credentialsFrom(migratorUrl, APP_MIGRATOR_ROLE);
@@ -61,7 +63,9 @@ export async function bootstrapRoles(
     await client.query('begin');
     await upsertRole(client, migrator);
     await upsertRole(client, appRw);
-    await client.query(grants);
+    // privileges: false creates the roles only. A restore needs that: the dump itself creates the
+    // schemas, so they must not exist yet. Run again with privileges (default) after the restore.
+    if (options.privileges ?? true) await client.query(grants);
     await client.query('commit');
   } catch (error) {
     await client.query('rollback').catch(() => undefined);
