@@ -32,6 +32,40 @@ export function localRunner(): ToolRunner {
   };
 }
 
+/**
+ * Runs the tools from a PostgreSQL image (e.g. postgres:16-alpine) against a server reachable from
+ * this machine. Gives the client version matching the server without installing anything (used on CI,
+ * where the runner only offers a newer client). Selected by the PG_TOOLS_IMAGE variable.
+ */
+export function imageRunner(image: string): ToolRunner {
+  const onLinux = process.platform === 'linux';
+  return {
+    name: `docker run ${image}`,
+    hostPort: (url) => {
+      const local = ['localhost', '127.0.0.1', '[::1]', '::1'].includes(url.hostname);
+      // Linux: share the host network. Docker Desktop (Windows/macOS): reach the host by name.
+      const host = local && !onLinux ? 'host.docker.internal' : url.hostname;
+      return { host, port: url.port || '5432' };
+    },
+    spawn: (tool, args, password) =>
+      spawn(
+        'docker',
+        [
+          'run',
+          '--rm',
+          '-i',
+          ...(onLinux ? ['--network', 'host'] : []),
+          '-e',
+          'PGPASSWORD',
+          image,
+          tool,
+          ...args,
+        ],
+        { env: { ...process.env, PGPASSWORD: password }, stdio: ['pipe', 'pipe', 'pipe'] },
+      ),
+  };
+}
+
 /** Runs the tools inside the `db` service of docker-compose.yml (development machines without pg tools). */
 export function composeRunner(service = 'db'): ToolRunner {
   return {
@@ -58,8 +92,13 @@ export function containerRunner(container: string): ToolRunner {
   };
 }
 
-/** Local tools when installed, otherwise the compose `db` service (only for a local server). */
+/**
+ * PG_TOOLS_IMAGE if set; else local tools when installed; else the compose `db` service
+ * (only for a local server).
+ */
 export function defaultRunner(connectionString: string): ToolRunner {
+  const image = process.env['PG_TOOLS_IMAGE'];
+  if (image) return imageRunner(image);
   const binDir = process.env['PG_BIN_DIR'];
   const hasLocal =
     spawnSync(binDir ? join(binDir, 'pg_dump') : 'pg_dump', ['--version'], { stdio: 'ignore' })
@@ -124,7 +163,7 @@ async function assertClientNotNewer(
     if (!Number.isFinite(serverMajor)) throw new Error('Cannot read the PostgreSQL server version');
     if (client > serverMajor) {
       throw new Error(
-        `pg_dump ${client} (${runner.name}) is newer than the PostgreSQL ${serverMajor} server: the dump could not be restored. Use PostgreSQL ${serverMajor} client tools (set PG_BIN_DIR).`,
+        `pg_dump ${client} (${runner.name}) is newer than the PostgreSQL ${serverMajor} server: the dump could not be restored. Use PostgreSQL ${serverMajor} client tools (set PG_TOOLS_IMAGE=postgres:${serverMajor}-alpine or PG_BIN_DIR).`,
       );
     }
   } finally {

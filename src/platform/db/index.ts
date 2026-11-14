@@ -20,6 +20,7 @@ export {
   restoreDatabase,
   defaultRunner,
   localRunner,
+  imageRunner,
   composeRunner,
   containerRunner,
   type ToolRunner,
