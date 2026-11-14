@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { bindTenant } from '../context.ts';
 import { getLogger } from '../logger.ts';
 
 /** SQL handle valid ONLY inside the withTenant() callback that received it. */
@@ -58,6 +59,7 @@ export function createDatabaseFromPool(pool: Pool, options: { ownsPool: boolean 
   return {
     async withTenant(tenantId, fn) {
       const id = parseTenantId(tenantId);
+      bindTenant(id); // from now on every log line of this request carries the tenant
       if (insideTenantContext.getStore()) {
         throw new Error('Nested withTenant() calls are not allowed');
       }

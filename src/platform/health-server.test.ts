@@ -28,5 +28,6 @@ describe('health server', () => {
   it('answers 404 elsewhere', async () => {
     const response = await fetch(`${await start()}/other`);
     expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ error: { code: 'not_found' } });
   });
 });

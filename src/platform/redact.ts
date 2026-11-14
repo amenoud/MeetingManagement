@@ -1,5 +1,6 @@
 // Masks secrets, personal data and content before anything is written to a log (PLAN-PLT-01).
 // This is a safety NET: the rule is to log identifiers, never content. Pure, never throws.
+import { databaseErrorFields } from './error-shape.ts';
 import { Secret } from './secret.ts';
 
 const MAX_DEPTH = 6;
@@ -108,6 +109,9 @@ function walk(value: unknown, depth: number, seen: WeakSet<object>, allowLong: b
   if (object instanceof Date) return Number.isNaN(object.getTime()) ? null : object.toISOString();
   if (object instanceof Map || object instanceof Set) return `[${object.constructor.name}]`;
   if (object instanceof Error) {
+    // Drizzle/PostgreSQL errors: never their text (SQL, parameters, row values), only value-free fields.
+    const database = databaseErrorFields(object);
+    if (database) return walk(database, depth + 1, seen, false);
     const out: Record<string, unknown> = {
       type: object.name,
       message: walk(object.message, depth + 1, seen, false),
