@@ -10,7 +10,7 @@ import {
   type Database,
   type TenantTransaction,
 } from '../../src/platform/db/with-tenant.ts';
-import { createTestDatabase, errorCode, query, type TestDatabase } from './helpers.ts';
+import { createTestDatabase, errorCode, query, type TestDatabase } from '../helpers/db.ts';
 
 const MIGRATIONS = fileURLToPath(new URL('../../db/migrations', import.meta.url));
 const FIXTURE = fileURLToPath(new URL('./fixtures/isolation.sql', import.meta.url));

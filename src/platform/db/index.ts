@@ -7,3 +7,11 @@ export {
   type DatabaseOptions,
   type TenantTransaction,
 } from './with-tenant.ts';
+export {
+  auditIsolation,
+  parseExceptions,
+  NO_EXCEPTIONS,
+  type Finding,
+  type IsolationExceptions,
+  type Rule,
+} from './isolation-audit.ts';

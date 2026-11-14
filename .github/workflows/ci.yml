@@ -148,3 +148,44 @@ jobs:
       - name: Bootstrap roles and apply migrations
         run: pnpm db:setup
       - run: pnpm test:integration
+
+  isolation:
+    name: isolation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_only_password
+          POSTGRES_DB: meetingmanagement
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # Throwaway CI database: fake credentials, destroyed with the runner.
+      DATABASE_ADMIN_URL: postgres://postgres:ci_only_password@127.0.0.1:5432/meetingmanagement
+      DATABASE_URL: postgres://app_rw:ci_app_rw_password@127.0.0.1:5432/meetingmanagement
+      DATABASE_MIGRATOR_URL: postgres://app_migrator:ci_migrator_password@127.0.0.1:5432/meetingmanagement
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Bootstrap roles and apply migrations
+        run: pnpm db:setup
+      # AC13: every table of the migrated schema must follow the isolation conventions.
+      - name: Audit the migrated schema
+        run: pnpm db:audit
+      - name: Isolation test suite
+        run: pnpm test:isolation

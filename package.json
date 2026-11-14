@@ -22,7 +22,9 @@
     "db:bootstrap": "node --env-file-if-exists=.env scripts/db-bootstrap.ts",
     "db:migrate": "node --env-file-if-exists=.env scripts/db-migrate.ts",
     "db:setup": "pnpm db:bootstrap && pnpm db:migrate",
-    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts tests/integration",
+    "test:isolation": "vitest run --config vitest.integration.config.ts tests/isolation",
+    "db:audit": "node --env-file-if-exists=.env scripts/db-audit.ts",
     "check:actions": "node scripts/check-actions-pinned.ts",
     "test:docker": "node scripts/docker-smoke.mjs",
     "prepare": "husky"

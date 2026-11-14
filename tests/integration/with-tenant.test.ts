@@ -9,7 +9,7 @@ import {
   type Database,
   type TenantTransaction,
 } from '../../src/platform/db/with-tenant.ts';
-import { createTestDatabase, type TestDatabase } from './helpers.ts';
+import { createTestDatabase, type TestDatabase } from '../helpers/db.ts';
 
 const MIGRATIONS = fileURLToPath(new URL('../../db/migrations', import.meta.url));
 const TENANT_A = '0197b3a2-7c1e-7f00-8000-00000000000a';
