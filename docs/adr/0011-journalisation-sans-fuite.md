@@ -24,4 +24,6 @@ Les journaux sont la fuite la plus probable d'un produit qui manipule des PV et 
 - Faux positifs visibles : une clé qui ressemble à un secret (`tokenCount`) est masquée par `[REDACTED]`, jamais supprimée en silence. Les hachages restent lisibles sous une clé `…hash`, `sha256`, `checksum`, `digest`.
 - Les chemins de fichier dans les piles d'appels peuvent être partiellement masqués par la règle des longues suites : acceptable, visible.
 - Les **bindings d'un logger enfant** (`log.child({...})`) ne sont pas masqués : ils doivent rester statiques et non sensibles.
-- Erreurs PostgreSQL/Drizzle (journalisation par code seulement, réponse HTTP générique) : PLT-01b. Adresses IP : PLT-03.
+- **Erreurs (PLT-01b)** : une erreur Drizzle ou PostgreSQL est journalisée **sans son texte** (`DatabaseError` : `pg_code`, `pg_severity`, `pg_schema`, `pg_table`, `pg_column`, `pg_constraint`, `pg_routine` et les lignes d'appel de la pile). Vérifié avec une **vraie** erreur : son message contient bien la valeur, le SQL et les paramètres. L'utilisateur reçoit `internal_error` + `requestId` ; seul un `AppError` (message public, code stable) est montré tel quel.
+- **Journal des requêtes (PLT-01b)** : méthode, chemin **sans la chaîne de requête**, statut, durée, avec `request_id` (et `tenant_id` dès que `withTenant` l'a lié). Le contexte reste correct sur une connexion keep-alive (testé).
+- Reste : adresses IP (PLT-03).
