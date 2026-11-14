@@ -145,12 +145,15 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
-      # The restore tests need pg_dump / pg_restore (PostgreSQL 16 client).
-      - name: PostgreSQL client tools
+      # The restore tests need pg_dump / pg_restore of the SAME major version as the server (16):
+      # the runner's default client is newer and writes a dump the 16 server cannot restore.
+      - name: PostgreSQL 16 client tools
         run: |
-          command -v pg_dump >/dev/null || sudo apt-get install -y --no-install-recommends postgresql-client-16
-          pg_dump --version
-          pg_restore --version
+          sudo apt-get update -y
+          sudo apt-get install -y --no-install-recommends postgresql-client-16
+          echo "PG_BIN_DIR=/usr/lib/postgresql/16/bin" >> "$GITHUB_ENV"
+          /usr/lib/postgresql/16/bin/pg_dump --version
+          /usr/lib/postgresql/16/bin/pg_restore --version
       - name: Bootstrap roles and apply migrations
         run: pnpm db:setup
       - run: pnpm test:integration

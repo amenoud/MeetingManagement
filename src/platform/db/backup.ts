@@ -3,6 +3,8 @@
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { Client } from 'pg';
 
 /** Where pg_dump / pg_restore run: on this machine, or inside a PostgreSQL container. */
 export interface ToolRunner {
@@ -12,12 +14,18 @@ export interface ToolRunner {
   spawn(tool: 'pg_dump' | 'pg_restore', args: string[], password: string): ChildProcess;
 }
 
+/**
+ * Local tools. PG_BIN_DIR selects the directory holding pg_dump / pg_restore, so a machine with
+ * several PostgreSQL versions uses the one matching the server (see assertClientNotNewer).
+ */
 export function localRunner(): ToolRunner {
+  const binDir = process.env['PG_BIN_DIR'];
+  const command = (tool: string): string => (binDir ? join(binDir, tool) : tool);
   return {
     name: 'local',
     hostPort: (url) => ({ host: url.hostname, port: url.port || '5432' }),
     spawn: (tool, args, password) =>
-      spawn(tool, args, {
+      spawn(command(tool), args, {
         env: { ...process.env, PGPASSWORD: password },
         stdio: ['pipe', 'pipe', 'pipe'],
       }),
@@ -52,7 +60,10 @@ export function containerRunner(container: string): ToolRunner {
 
 /** Local tools when installed, otherwise the compose `db` service (only for a local server). */
 export function defaultRunner(connectionString: string): ToolRunner {
-  const hasLocal = spawnSync('pg_dump', ['--version'], { stdio: 'ignore' }).status === 0;
+  const binDir = process.env['PG_BIN_DIR'];
+  const hasLocal =
+    spawnSync(binDir ? join(binDir, 'pg_dump') : 'pg_dump', ['--version'], { stdio: 'ignore' })
+      .status === 0;
   if (hasLocal) return localRunner();
   const host = new URL(connectionString).hostname;
   if (['localhost', '127.0.0.1', '::1', '[::1]'].includes(host)) return composeRunner();
@@ -74,6 +85,51 @@ function connectionArgs(url: URL, runner: ToolRunner): string[] {
     '-d',
     decodeURIComponent(url.pathname.slice(1)),
   ];
+}
+
+/** "pg_dump (PostgreSQL) 17.2" -> 17. Returns undefined when no version is found. */
+export function majorVersion(text: string): number | undefined {
+  const match = /(\d+)(?:\.\d+)*/.exec(text.replace(/^[^\d]*/, ''));
+  return match ? Number(match[1]) : undefined;
+}
+
+/**
+ * A pg_dump NEWER than the server writes settings the server does not know: the dump then cannot be
+ * restored (seen on CI: client 17+ against server 16, "unrecognized configuration parameter").
+ * Refuse to create a dump that could not be restored.
+ */
+async function assertClientNotNewer(
+  connectionString: string,
+  runner: ToolRunner,
+  password: string,
+): Promise<void> {
+  const probe = runner.spawn('pg_dump', ['--version'], password);
+  let output = '';
+  probe.stdout?.setEncoding('utf8');
+  probe.stdout?.on('data', (chunk: string) => {
+    output += chunk;
+  });
+  const result = await waitFor(probe);
+  const client = majorVersion(output);
+  if (result.code !== 0 || client === undefined) {
+    throw new Error(`Cannot read the pg_dump version (${runner.name}): ${result.stderr.trim()}`);
+  }
+  const server = new Client({ connectionString });
+  await server.connect();
+  try {
+    const row = await server.query<{ num: string }>(
+      `select current_setting('server_version_num') as num`,
+    );
+    const serverMajor = Math.floor(Number(row.rows[0]?.num) / 10000);
+    if (!Number.isFinite(serverMajor)) throw new Error('Cannot read the PostgreSQL server version');
+    if (client > serverMajor) {
+      throw new Error(
+        `pg_dump ${client} (${runner.name}) is newer than the PostgreSQL ${serverMajor} server: the dump could not be restored. Use PostgreSQL ${serverMajor} client tools (set PG_BIN_DIR).`,
+      );
+    }
+  } finally {
+    await server.end();
+  }
 }
 
 interface Outcome {
@@ -103,6 +159,7 @@ export async function dumpDatabase(
   runner: ToolRunner = defaultRunner(connectionString),
 ): Promise<void> {
   const url = new URL(connectionString);
+  await assertClientNotNewer(connectionString, runner, decodeURIComponent(url.password));
   const child = runner.spawn(
     'pg_dump',
     ['--format=custom', ...connectionArgs(url, runner)],

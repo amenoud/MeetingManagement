@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { spawn } from 'node:child_process';
 import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -14,6 +15,7 @@ import {
   runMigrations,
   snapshotDatabase,
   type Snapshot,
+  type ToolRunner,
 } from '../../src/platform/db/index.ts';
 import { createDatabaseFromPool } from '../../src/platform/db/with-tenant.ts';
 import { createBareDatabase, createTestDatabase, query, type TestDatabase } from '../helpers/db.ts';
@@ -82,9 +84,9 @@ afterAll(async () => {
 
 describe('SPEC-000-AC27 backup and restore', () => {
   it('produces a non-empty custom-format dump', async () => {
-    expect((await stat(dumpFile)).size).toBeGreaterThan(1000);
-    const header = (await readFile(dumpFile)).subarray(0, 5).toString('latin1');
-    expect(header).toBe('PGDMP');
+    const content = await readFile(dumpFile);
+    expect(content.length).toBeGreaterThan(1000);
+    expect(content.subarray(0, 5).toString('latin1')).toBe('PGDMP');
   });
 
   it('the source holds data for both tenants (the drill is not vacuous)', () => {
@@ -133,6 +135,22 @@ describe('SPEC-000-AC27 backup and restore', () => {
     const target = await createBareDatabase();
     extra.push(target);
     await expect(restoreInto(target, truncated)).rejects.toThrow(/pg_restore failed/);
+  });
+
+  it('refuses to dump with a client newer than the server (such a dump cannot be restored)', async () => {
+    const newerClient: ToolRunner = {
+      name: 'fake pg_dump 99',
+      hostPort: () => ({ host: 'localhost', port: '5432' }),
+      spawn: () =>
+        spawn(process.execPath, ['-e', "console.log('pg_dump (PostgreSQL) 99.0')"], {
+          stdio: ['pipe', 'pipe', 'pipe'],
+        }),
+    };
+    const never = join(workDir, 'never.dump');
+    await expect(dumpDatabase(source.adminUrl, never, newerClient)).rejects.toThrow(
+      /newer than the PostgreSQL 16 server/,
+    );
+    await expect(stat(never)).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
   it('a file that is not a dump is refused', async () => {
