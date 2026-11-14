@@ -42,7 +42,7 @@ Disposer d'un squelette déployable en continu où l'**isolation entre organisat
 - **SPEC-000-AC15** *Given* `docker compose up`, *then* l'application, PostgreSQL, un S3 local et un SMTP de test sont joignables et `/healthz` répond 200.
 - **SPEC-000-AC16** *Given* l'image Docker, *then* elle s'exécute en utilisateur non root et ne contient aucun secret.
 - **SPEC-000-AC17** *Given* une variable d'environnement obligatoire manquante, *when* l'application démarre, *then* elle échoue avec un message explicite (configuration validée par Zod).
-- **SPEC-000-AC18** *Given* une requête, *then* les logs contiennent `request_id` et `tenant_id` mais ni mot de passe, ni jeton, ni contenu de PV (test de redaction).
+- **SPEC-000-AC18** *(PLT-01a : masquage, `request_id`, `tenant_id` ; PLT-01b : niveau HTTP)* *Given* une requête, *then* les logs contiennent `request_id` et `tenant_id` mais ni mot de passe, ni jeton, ni contenu de PV (test de redaction).
 - **SPEC-000-AC19** *Given* une réponse HTTP, *then* elle porte CSP avec nonce, HSTS, `nosniff`, `frame-ancestors 'none'`, `Referrer-Policy`.
 - **SPEC-000-AC20** *Given* plus de N requêtes dans la fenêtre sur une route protégée, *then* la réponse est 429 avec `Retry-After`.
 - **SPEC-000-AC21** *Given* l'application en `fr`, `de` ou `en`, *then* la page d'accueil s'affiche dans la langue choisie ; *given* une clé présente dans une langue et absente d'une autre, *then* la CI échoue.

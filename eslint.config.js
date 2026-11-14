@@ -43,6 +43,26 @@ export default tseslint.config(
     },
   },
   {
+    // Configuration is read once, validated, in src/platform/config.ts (PLAN-PLT-01).
+    files: ['src/**/*.ts'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'process',
+          property: 'env',
+          message: 'Read configuration through getConfig() (src/platform/config.ts).',
+        },
+      ],
+      'no-console': 'error', // use getLogger(): logs are scrubbed and carry the request context
+    },
+  },
+  {
+    // Explicit exceptions: the configuration module and the PostgreSQL tool selection (PG_* variables).
+    files: ['src/platform/config.ts', 'src/platform/db/backup.ts'],
+    rules: { 'no-restricted-properties': 'off' },
+  },
+  {
     // The database layer, its scripts and the integration tests may talk to pg directly.
     files: [
       'src/platform/db/**/*.ts',
