@@ -21,4 +21,6 @@ Colonne `search tsvector` générée sur `decision.text` et `title`, `agenda_ite
 **Retenue : `@react-pdf/renderer`**, polices embarquées (couvrant FR/DE/EN, y compris trémas), gabarit unique pour le PV avec en-tête, liste de présence, quorum, points, décisions, votes, annexes, pied de page avec version et hash, **bloc de signature vide**. Archivage PDF/A : plus tard (V2), éventuellement par post-traitement.
 
 ## 3. Internationalisation
+
+> Complété par [ADR-0012](0012-i18n-coeur-independant.md) : cœur indépendant du framework web ; `next-intl` est branché sur les mêmes fichiers avec PLT-03.
 `next-intl`, langues `fr` (défaut), `de`, `en`. Messages dans `messages/{locale}.json`, clés hiérarchiques, **aucune chaîne en dur dans l'UI** (règle ESLint `no-literal-string`), pluriels ICU, formats de date et nombres via `Intl` (fuseau `Europe/Zurich` par défaut, réglable par séance). Langue : préférence utilisateur, repli sur celle du tenant. E-mails, `.ics` (`SUMMARY`/`DESCRIPTION`), PDF : localisés dans la langue du destinataire (convocation) ou du tenant (PV). Test CI : parité des clés entre les 3 langues.

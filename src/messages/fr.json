@@ -1,0 +1,24 @@
+{
+  "app": {
+    "name": "MeetingManagement"
+  },
+  "home": {
+    "title": "Gestion de séances de comité",
+    "tagline": "Convoquer, délibérer, décider et documenter, en toute sécurité.",
+    "status": "L’application est en cours de développement.",
+    "languageNav": "Langue"
+  },
+  "errors": {
+    "not_found": "La page demandée est introuvable.",
+    "forbidden": "Vous n’êtes pas autorisé à effectuer cette action.",
+    "unauthenticated": "Veuillez vous connecter pour continuer.",
+    "validation_failed": "Les données saisies sont invalides. Veuillez vérifier votre saisie.",
+    "rate_limited": "Trop de requêtes. Veuillez réessayer plus tard.",
+    "internal_error": "Une erreur inattendue s’est produite. Indiquez le numéro de requête au support."
+  },
+  "language": {
+    "fr": "Français",
+    "de": "Deutsch",
+    "en": "English"
+  }
+}
