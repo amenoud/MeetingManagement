@@ -8,7 +8,8 @@ const ENTRY = /^\s*([A-Za-z]{1,8}(?:-[A-Za-z0-9]{1,8})*|\*)\s*(?:;\s*q=([01](?:\
 export function normalizeLocale(tag: string | null | undefined): Locale | undefined {
   if (!tag) return undefined;
   const primary = tag.trim().toLowerCase().split('-')[0];
-  return (LOCALES as readonly string[]).includes(primary ?? '') ? (primary as Locale) : undefined;
+  // Return OUR constant, not the input string: what reaches a page or a header is never request data.
+  return LOCALES.find((candidate) => candidate === primary);
 }
 
 /**

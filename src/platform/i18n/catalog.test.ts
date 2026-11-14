@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -119,10 +119,10 @@ describe('error messages by code', () => {
   function codesUsedInSource(): string[] {
     const found = new Set<string>();
     const visit = (dir: string): void => {
-      for (const entry of readdirSync(dir)) {
-        const path = join(dir, entry);
-        if (statSync(path).isDirectory()) visit(path);
-        else if (/\.tsx?$/.test(entry) && !/\.test\.tsx?$/.test(entry)) {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) visit(path);
+        else if (/\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)) {
           for (const match of readFileSync(path, 'utf8').matchAll(
             /new AppError\(\s*'([a-z0-9_]+)'/g,
           )) {

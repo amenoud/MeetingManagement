@@ -23,7 +23,7 @@ export function renderHomePage(translator: Translator<MessageKey>): string {
     return `<a href="/?lang=${candidate}" hreflang="${candidate}" lang="${candidate}"${current}>${escapeHtml(t(`language.${candidate}`))}</a>`;
   }).join(' ');
   return `<!doctype html>
-<html lang="${locale}">
+<html lang="${escapeHtml(locale)}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
